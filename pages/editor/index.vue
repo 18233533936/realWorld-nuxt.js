@@ -5,6 +5,13 @@
         <div class="row">
 
             <div class="col-md-10 offset-md-1 col-xs-12">
+                <ul class="error-messages" v-if="errors">
+                    <div v-for="(value, field) in errors" :key="field" class="ng-scope">
+                      <li v-for="error in value" :key="error" class="ng-binding ng-scope">
+                        {{field}} {{error}}
+                      </li>
+                    </div>
+                  </ul>
                 <form @submit.prevent="onSubmit">
                    
                         <fieldset class="form-group">
@@ -33,11 +40,14 @@
 </div>
 
 
-  </template>
+</template>
 
 <script>
     import {
-        getArticless
+        createArticle
+    } from '@/api/editor'
+    import {
+        updateArticle, getArticle
     } from '@/api/article'
     export default {
         // 在路由匹配组件渲染之前会先执行中间件处理
@@ -46,11 +56,13 @@
         props: [''],
         data() {
             return {
+                errors: null,
+                tagstr: '',
                 article: {
                     title: "",
                     description: "",
                     body: "",
-                    tagList: ''
+                    tagList: []
                 }
             };
         },
@@ -61,21 +73,37 @@
 
         beforeMount() {},
 
-        mounted() {},
+       async mounted () {
+            const slug = this.$route.params.slug
+            if (slug) {
+            this.slug = slug
+            const { data } = await getArticle(slug)
+            this.article = data.article
+            }
+        },
 
         methods: {
+            enterTag () {
+              this.article.tagList.push(this.tagstr)
+              this.tagstr = ''
+            },
+            removeTag (index) {
+              this.article.tagList.splice(index, 1)
+            },
             async onSubmit() {
-                console.log('dasda')
-                const {
-                    data
-                } =
-                await getArticless({
-                    article: this.article
-                })
-                console.log('555', data)
-
-                // 成功以后跳转到首页
-                //this.$router.push('/')
+                try {
+                    if (this.slug) {
+                    const { data } = await updateArticle(this.slug, {article: this.article})
+                    this.$router.push(`/article/${data.article.slug}`)
+                    }else {
+                    const { data } = await createArticle({
+                        article: this.article
+                    })
+                    this.$router.push(`/article/${data.article.slug}`)
+                    }
+                } catch (errors) {
+                    this.errors = errors.response.data.errors
+                }
             }
         },
 

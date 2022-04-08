@@ -9,15 +9,6 @@ export const getArticles = params => {
     })
 }
 
-//
-export const getArticless = params => {
-    return request({
-        method: 'POST',
-        url: '/api/articles',
-        params
-    })
-}
-
 export const getYourFeedArticles = params => {
     return request({
         method: 'GET',
@@ -59,5 +50,22 @@ export const getComments = slug => {
     return request({
         method: 'GET',
         url: `/api/articles/${slug}/comments`
+    })
+}
+
+// 更新文章详情
+export const updateArticle = (slug, data) => {
+    return request({
+        method: 'PUT',
+        url: `/api/articles/${slug}`,
+        data
+    })
+}
+
+// 删除文章
+export const deleteArticle = slug => {
+    return request({
+        method: 'DELETE',
+        url: `/api/articles/${slug}`,
     })
 }
